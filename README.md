@@ -1,4 +1,4 @@
-<h1 align="center">Scramjet</h1>
+<h1 align="center">ghost</h1>
 <div align="center">
   <img src="assets/ghostlogo-white-png.png" height="200" />
 </div>
