@@ -10,6 +10,6 @@ ghost is a work-in-progress web proxy. It will have unblocked games while also h
 5/4/26: Made this repository!
 
 ## Developers
-lynverix - Main developer
-lynverix - Designer
-lynverix - Also a developer
+- lynverix - Main developer
+- lynverix - Designer
+- lynverix - Also a developer
