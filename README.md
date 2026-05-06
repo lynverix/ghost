@@ -7,7 +7,7 @@ ghost is a work-in-progress web proxy. It will have unblocked games while also h
 ###
 
 ## Progress Updates (MM/DD/YY)
-5/4/26: Made this repository!
+5/4/26: Made this repository!<br>
 5/5/26: Added barebones Scramjet template web proxy (Version 2.0.2-alpha) 
 
 ## Developers
