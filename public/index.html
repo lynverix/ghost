@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>proxy</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- sets up the $scramjet global before the controller loads -->
+  <script src="/scramjet/scramjet_bundled.js"></script>
+
   <script type="importmap">
     {
       "imports": {
-        "@mercuryworkshop/bare-mux": "/baremux/index.js",
-        "@mercuryworkshop/libcurl-transport": "/libcurl/index.js",
-        "@mercuryworkshop/scramjet": "/scram/scramjet.controller.js"
+        "@mercuryworkshop/scramjet-controller": "/controller/controller.api.js",
+        "@mercuryworkshop/proxy-transports": "/proxy-transports/index.mjs"
       }
     }
   </script>

@@ -1,6 +1,5 @@
-import { ScramjetController } from "@mercuryworkshop/scramjet";
-import { BareMuxConnection } from "@mercuryworkshop/bare-mux";
-import "/libcurl/index.js";
+import { Controller } from "@mercuryworkshop/scramjet-controller";
+import { BareCompatibleClient } from "@mercuryworkshop/proxy-transports";
 
 // dom references
 const tabsEl = document.getElementById("tabs");
@@ -15,21 +14,9 @@ const newTabBtn = document.getElementById("new-tab-btn");
 const tabs = [];
 let activeTabId = null;
 let tabCounter = 0;
+let controller = null;
 
-// scramjet controller instance
-const controller = new ScramjetController({
-  prefix: "/scram/",
-  files: {
-    wasm: "/scram/scramjet.wasm.js",
-    worker: "/scram/scramjet.worker.js",
-    client: "/scram/scramjet.client.js",
-    shared: "/scram/scramjet.shared.js",
-    sync: "/scram/scramjet.sync.js",
-  },
-  flags: loadFlags(),
-});
-
-// load feature flags from localstorage, fall back to defaults
+// load feature flags from localstorage, fall back to empty
 function loadFlags() {
   try {
     const stored = localStorage.getItem("scramjet-flags");
@@ -39,30 +26,54 @@ function loadFlags() {
   }
 }
 
-// register service worker and set up bare-mux transport
 async function init() {
-  await controller.init("/sw.js");
+  // register the controller service worker
+  const reg = await navigator.serviceWorker.register("/controller/controller.sw.js", {
+    type: "module",
+  });
 
-  const conn = new BareMuxConnection("/baremux/worker.js");
-  await conn.setTransport("/libcurl/index.js", [
-    "wss://" + location.host + "/wisp/",
-  ]);
+  // wait for an active service worker
+  const readyReg = await navigator.serviceWorker.ready;
+  const sw = readyReg.active;
+
+  // set up transport pointing at our wisp server
+  const transport = new BareCompatibleClient(
+    "wss://" + location.host + "/wisp/"
+  );
+
+  // create the controller
+  controller = new Controller({
+    config: {
+      prefix: "/~/sj/",
+      scramjetPath: "/scramjet/scramjet.js",
+      injectPath: "/controller/controller.inject.js",
+      wasmPath: "/scramjet/scramjet.wasm",
+    },
+    scramjetConfig: {
+      flags: loadFlags(),
+    },
+    serviceworker: sw,
+    transport,
+  });
+
+  await controller.wait();
 
   createTab();
 }
 
-// create a new tab, optionally with a starting url
+// create a new tab
 function createTab(url) {
   const id = ++tabCounter;
 
   const iframe = document.createElement("iframe");
-  iframe.id = "frame-" + id;
   iframe.className = "proxy-frame";
   iframe.style.display = "none";
-  iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups");
   frameContainer.appendChild(iframe);
 
-  const tab = { id, iframe, url: url || "" };
+  // register this iframe as a scramjet frame
+  const frame = controller.createFrame(iframe);
+
+  const tab = { id, iframe, frame, url: url || "", title: "" };
   tabs.push(tab);
 
   renderTabs();
@@ -71,7 +82,7 @@ function createTab(url) {
   if (url) navigate(url);
 }
 
-// switch active tab
+// switch to a tab by id
 function switchTab(id) {
   tabs.forEach(t => {
     t.iframe.style.display = t.id === id ? "block" : "none";
@@ -85,7 +96,7 @@ function switchTab(id) {
   renderTabs();
 }
 
-// close a tab, always keep at least one open
+// close a tab
 function closeTab(id) {
   const index = tabs.findIndex(t => t.id === id);
   if (index === -1) return;
@@ -104,12 +115,12 @@ function closeTab(id) {
   renderTabs();
 }
 
-// get the currently active tab object
+// get the active tab
 function getActiveTab() {
   return tabs.find(t => t.id === activeTabId) || null;
 }
 
-// re-render all tab buttons
+// re-render tab strip
 function renderTabs() {
   tabsEl.innerHTML = "";
 
@@ -136,7 +147,7 @@ function renderTabs() {
   });
 }
 
-// navigate the active tab to a url or search query
+// navigate the active tab
 function navigate(input) {
   const tab = getActiveTab();
   if (!tab) return;
@@ -145,12 +156,21 @@ function navigate(input) {
   tab.url = url;
   omnibox.value = url;
 
-  tab.iframe.src = controller.encodeUrl(url);
+  // encode and load via the frame's prefix
+  tab.iframe.src = tab.frame.prefix + controller.config.codec.encode(url);
 
   renderTabs();
 }
 
-// try to update the tab title from the iframe document
+// resolve raw input to a full url
+function resolveInput(input) {
+  input = input.trim();
+  if (/^https?:\/\//i.test(input)) return input;
+  if (/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(input)) return "https://" + input;
+  return "https://www.google.com/search?q=" + encodeURIComponent(input);
+}
+
+// sync tab title from iframe
 function syncTabTitle(tab) {
   try {
     const title = tab.iframe.contentDocument?.title;
@@ -159,29 +179,15 @@ function syncTabTitle(tab) {
       renderTabs();
     }
   } catch {
-    // cross-origin, can't read title — that's fine
+    // cross-origin, fine to ignore
   }
 }
 
-// turn raw input into a full url
-function resolveInput(input) {
-  input = input.trim();
-
-  if (/^https?:\/\//i.test(input)) return input;
-
-  // looks like a domain
-  if (/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(input)) return "https://" + input;
-
-  // treat as a search
-  return "https://www.google.com/search?q=" + encodeURIComponent(input);
-}
-
-// omnibox: navigate on enter
+// omnibox events
 omnibox.addEventListener("keydown", (e) => {
   if (e.key === "Enter") navigate(omnibox.value);
 });
 
-// omnibox: select all on focus
 omnibox.addEventListener("focus", () => omnibox.select());
 
 // nav buttons
@@ -202,7 +208,7 @@ refreshBtn.addEventListener("click", () => {
 
 newTabBtn.addEventListener("click", () => createTab());
 
-// update omnibox and title when the iframe navigates
+// update omnibox on iframe navigation
 frameContainer.addEventListener("load", (e) => {
   if (!e.target.classList.contains("proxy-frame")) return;
 
@@ -210,14 +216,15 @@ frameContainer.addEventListener("load", (e) => {
   if (!tab || tab.id !== activeTabId) return;
 
   try {
-    const raw = tab.iframe.contentWindow?.location.href;
-    if (raw) {
-      tab.url = controller.decodeUrl(raw);
+    const raw = tab.iframe.contentWindow?.location.pathname;
+    if (raw && tab.frame?.prefix && raw.startsWith(tab.frame.prefix)) {
+      const encoded = raw.slice(tab.frame.prefix.length);
+      tab.url = controller.config.codec.decode(encoded);
       omnibox.value = tab.url;
     }
   } catch {
-    // cross-origin block — ignore
-  } 
+    // cross-origin, ignore
+  }
 
   syncTabTitle(tab);
 }, true);
