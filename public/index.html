@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>proxy</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "@mercuryworkshop/bare-mux": "/baremux/index.js",
+        "@mercuryworkshop/libcurl-transport": "/libcurl/index.js",
+        "@mercuryworkshop/scramjet": "/scram/scramjet.controller.js"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="tab-bar">
+    <div id="tabs"></div>
+    <button id="new-tab-btn">+</button>
+    <a href="settings.html" target="_blank" id="settings-btn">&#9881;</a>
+  </div>
+
+  <div id="nav-bar">
+    <button id="back-btn">&#8592;</button>
+    <button id="forward-btn">&#8594;</button>
+    <button id="refresh-btn">&#8635;</button>
+    <input id="omnibox" type="text" placeholder="enter a url or search..." autocomplete="off" spellcheck="false" />
+  </div>
+
+  <div id="frame-container"></div>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
