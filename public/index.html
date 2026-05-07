@@ -9,10 +9,12 @@
   <!-- sets up the $scramjet global before the controller loads -->
   <script src="/scramjet/scramjet_bundled.js"></script>
 
+  <!-- sets up the $scramjetController global -->
+<script src="/controller/controller.api.js"></script>
+
   <script type="importmap">
     {
       "imports": {
-        "@mercuryworkshop/scramjet-controller": "/controller/controller.api.js",
         "@mercuryworkshop/proxy-transports": "/proxy-transports/index.mjs"
       }
     }

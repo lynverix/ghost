@@ -1,4 +1,4 @@
-import { Controller } from "@mercuryworkshop/scramjet-controller";
+const { Controller } = $scramjetController;
 import { BareCompatibleClient } from "@mercuryworkshop/proxy-transports";
 
 // dom references
