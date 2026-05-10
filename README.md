@@ -10,6 +10,7 @@ ghost is a work-in-progress web proxy. It will have unblocked games while also h
 5/4/26: Made this repository!<br>
 5/5/26: Added barebones Scramjet template web proxy (Version 2.0.2-alpha), might redo sooner or later<br>
 5/6/26: Removed barebones template, working on one from scratch using Scramjet
+5/10/26: Added Scramjet-App template (v1.1.0). Will redesign until next release of Scramjet-App.
 
 ## Developers
 - lynverix - Main developer
