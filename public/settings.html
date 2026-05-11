@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>settings - ghost</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: sans-serif;
+        background: #1a1a1a;
+        color: #eee;
+        padding: 32px;
+      }
+
+      h1 {
+        font-size: 20px;
+        margin-bottom: 24px;
+        color: #fff;
+      }
+
+      .section {
+        background: #2a2a2a;
+        border-radius: 6px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .section h2 {
+        font-size: 14px;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 16px;
+      }
+
+      .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #333;
+      }
+
+      .setting-row:last-child {
+        border-bottom: none;
+      }
+
+      .setting-label {
+        font-size: 14px;
+      }
+
+      .setting-desc {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
+      }
+
+      button {
+        background: #3a3a3a;
+        border: 1px solid #555;
+        color: #eee;
+        font-size: 13px;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #444;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>settings</h1>
+
+    <div class="section">
+      <h2>general</h2>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">version</div>
+          <div class="setting-desc">scramjet v1.1.0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>more coming soon</h2>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">feature flags, themes, and more will be added here in a future update.</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
