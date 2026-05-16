@@ -28,13 +28,10 @@ const tabs = [];
 let activeTabId = null;
 let tabCounter = 0;
 
-// set up the wisp transport if not already done
+// always force-set the transport before navigating
 async function ensureTransport() {
-  await registerSW();
   const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-  if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
-    await connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
-  }
+  await connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
 }
 
 // create a new tab, optionally navigate to a url
@@ -43,6 +40,7 @@ function createTab(url) {
 
   const sjFrame = scramjet.createFrame();
   sjFrame.frame.className = "proxy-frame";
+  sjFrame.frame.setAttribute("credentialless", "");
   sjFrame.frame.style.display = "none";
   frameContainer.appendChild(sjFrame.frame);
 
@@ -61,7 +59,6 @@ async function navigateTab(tab, input) {
     await ensureTransport();
   } catch (err) {
     console.error("transport setup failed:", err);
-    return;
   }
 
   const url = search(input, "https://duckduckgo.com/?q=%s");
@@ -180,5 +177,23 @@ frameContainer.addEventListener("load", e => {
   syncTitle(tab);
 }, true);
 
-// open one tab on startup
-createTab();
+// register sw, wait for it to be active and controlling, then open first tab
+(async () => {
+  try {
+    await registerSW();
+  } catch (err) {
+    console.error("sw registration failed:", err);
+  }
+
+  await navigator.serviceWorker.ready;
+
+  // wait for the sw to actually be controlling this page before creating tabs
+  if (!navigator.serviceWorker.controller) {
+    await new Promise(resolve => {
+      navigator.serviceWorker.addEventListener("controllerchange", resolve, { once: true });
+      setTimeout(resolve, 3000);
+    });
+  }
+
+  createTab();
+})();
