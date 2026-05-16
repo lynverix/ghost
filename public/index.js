@@ -40,7 +40,6 @@ function createTab(url) {
 
   const sjFrame = scramjet.createFrame();
   sjFrame.frame.className = "proxy-frame";
-  sjFrame.frame.setAttribute("credentialless", "");
   sjFrame.frame.style.display = "none";
   frameContainer.appendChild(sjFrame.frame);
 
@@ -64,7 +63,12 @@ async function navigateTab(tab, input) {
   const url = search(input, "https://duckduckgo.com/?q=%s");
   tab.url = url;
   omnibox.value = url;
-  tab.sjFrame.go(url);
+
+  // load gateway.html which self-navigates to the proxy url
+  // this way the sw intercepts the navigation from within the iframe
+  const proxyUrl = "/scramjet/" + encodeURIComponent(url);
+  tab.sjFrame.frame.src = "/gateway.html?to=" + encodeURIComponent(proxyUrl);
+
   renderTabs();
 }
 

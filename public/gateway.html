@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      // read destination from query param and navigate to it
+      const params = new URLSearchParams(location.search);
+      const to = params.get("to");
+      if (to) location.replace(to);
+    </script>
+  </head>
+  <body></body>
+</html>
